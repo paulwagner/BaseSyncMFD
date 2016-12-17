@@ -36,8 +36,8 @@ SyncMFD::SyncMFD(GeoSyncMFD *m)
   trgt = &bstrgt;
 	trgt->lon=trgt->lat=0;
 	display_texts=defDispMode?defDispMode:3;
-	mode.enc=defEncMode?defEncMode-1:1; 
-	
+	mode.enc=defEncMode?defEncMode-1:1;
+
 	sync_line=0;
 	sync_num=defNumSol;
 	sync_dispmin=1;
@@ -59,14 +59,14 @@ SyncMFD::SyncMFD(GeoSyncMFD *m)
 //
 SyncMFD::~SyncMFD()
 {
-	
+
 }
 
 
 // ==============================================================================================================================================
 //
 void SyncMFD::Write(FILEHANDLE scn)
-{	
+{
 	unsigned int i;
 	char save_Target[32];
 	char save_Reference[32];
@@ -92,7 +92,7 @@ void SyncMFD::Read(FILEHANDLE scn)
 	bool go=true;
 	int tmpi;
 	char *line;
-	
+
 	while (go) {
 
 		go=oapiReadScenario_nextline (scn, line);
@@ -117,7 +117,7 @@ void SyncMFD::Read(FILEHANDLE scn)
 					&bstrgt.lon, &bstrgt.lat, &tmpi, &mode.enc,&sync_line,&sync_num);
 				mode.dir = (tmpi==2);
 			}
-			else go=false;		
+			else go=false;
 		}
 	}
 
@@ -174,19 +174,19 @@ void SyncMFD::LineAdjust(double x)
 double SyncMFD::Trl2Time(double trl, Orbit *src)
 {
 	if (trl<=src->trl) return 0;
-	
+
 	double tr = trl - src->trl;
-     
+
 	double per = floor(tr/PI2);
 
 	trl-=(per*PI2);
-	
+
 	if (trl<=src->trl) {
 		return (per*PI2) / src->mnm;
 	}
 
 	double mna = angular_distance(src->mna, tra2mna(limit(trl-src->lpe),src->ecc));
-	
+
 	double time = ((per*PI2+mna) / src->mnm);
 
 	return time;
@@ -203,14 +203,14 @@ VECTOR3 SyncMFD::ComputeDeOrbit(double mu, double rea, VECTOR3 _entry, VECTOR3 _
 	double vup    = sqrt(2.0*mu/refalt);	// Upper Limit = escape velocity
 	double vlw    = 0.0;
 	double v			= 0.0;
-	double p			= 0.0; 
+	double p			= 0.0;
 	double a			= 0.0;
-	double e			= 0.0; 
-	double t			= 0.0; 
+	double e			= 0.0;
+	double t			= 0.0;
 	double r			= 0.0;
 
 	for (int i=0;i<32;i++) {
-		
+
 		v = (vup + vlw) / 2.0;
 
 		p = cos(rea) * refalt * v; p*=p;	p/=mu;
@@ -221,7 +221,7 @@ VECTOR3 SyncMFD::ComputeDeOrbit(double mu, double rea, VECTOR3 _entry, VECTOR3 _
 
 		if (r>ca) vup=v; else vlw=v;
 	}
-	
+
 	VECTOR3 _n = crossp(_entry, _cp);
 	VECTOR3 _q = crossp(_n, _cp);
 
@@ -236,11 +236,11 @@ VECTOR3 SyncMFD::ComputeDeOrbit(double mu, double rea, VECTOR3 _entry, VECTOR3 _
 //
 bool SyncMFD::ComputeDeOrbit(double mu, double apd, double refalt, double rea, double *pre, double *dV)
 {
-		
+
 	double s   = sin(PI05-rea)*sin(PI05-rea);
 	double sma = ((apd*apd) - (refalt*refalt*s)) / ((2.0*apd) - (2.0*refalt*s));
 	double ecc = (apd / sma) - 1.0;
-	double vel = sqrt(2.0*mu/apd - mu/sma); 
+	double vel = sqrt(2.0*mu/apd - mu/sma);
 	double par = sma * (1.0-(ecc*ecc));
 
 	*pre = PI - acos( ((par/refalt)-1.0) / ecc);
@@ -262,7 +262,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 	double per = 0.0;
 	double offset = 0.0;
 	double size = 0.0;
-	double time = 0.0;	
+	double time = 0.0;
 
 	// Rotation elements
 	obli   = oapiGetPlanetObliquity(ref);
@@ -270,7 +270,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 	per    = oapiGetPlanetPeriod(ref);
 	offset = oapiGetPlanetCurrentRotation(ref);
 	size   = oapiGetSize(ref);
-    
+
 	LEO.LEO(ref);
 
 	double step  = PI2/16.01;
@@ -289,7 +289,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 
 	bool no_intercept=true;
 	bool first=true;
-	
+
 	for (trl=start;trl<end;trl+=step) {
 
 		// Caluclate time to a location
@@ -297,7 +297,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 
 		// Caluclate Planets Rotation offset at that time
 		PlanetAxis(obli,trans,offset,per,time,&Rot,&Off);
-		
+
 		// Calculate Ship's position vector and distance^2
 		pos  = src->Position(trl);
 		dst2 = dotp(pos,pos);
@@ -305,7 +305,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 		// Reset the distance to correspond a surface position.
 		pos  = set_length(pos,size);
 
-		// Compute ship's surface velocity vector direction	
+		// Compute ship's surface velocity vector direction
 		vel = crossp(src->norv,pos);
 
 		// Compute ship's surface velocity vector magnitude
@@ -315,17 +315,17 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 		gpv = VectorByLonLat(Rot,Off,lon,lat)*size;
 
 		// Compute speed of the base
-		spd = GroundSpeedVector(ref,time,lon,lat);	
-	   
+		spd = GroundSpeedVector(ref,time,lon,lat);
+
 		// Copmute relative position to the base
 		relv = (vel-spd);
-		relp = (pos-gpv);		
-		
+		relp = (pos-gpv);
+
 		dot = dotp(relv,relp);
-					
+
 		if (old_dot<0 && dot>0 && !first) {
 			if (angle(pos,gpv)<PI05) {
-				start=trl-step;			
+				start=trl-step;
 				no_intercept=false;
 				break;
 			}
@@ -333,7 +333,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 
 		first=false;
 		old_dot=dot;
-	} 
+	}
 
 
     // Return N/A if no passage points found
@@ -354,13 +354,13 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 	for (i=0;i<24;i++) {
 
 		step/=2.0;
-		
+
 		// Caluclate time to a location
 		time=Trl2Time(trl,src)/86400.0;
 
 		// Caluclate Planets Rotation offset at that time
 		PlanetAxis(obli,trans,offset,per,time,&Rot,&Off);
-		
+
 		// Calculate Ship's position vector and distance^2
 		pos  = src->Position(trl);
 		dst2 = dotp(pos,pos);
@@ -368,7 +368,7 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 		// Reset the distance to correspond a surface position.
 		pos  = set_length(pos,size);
 
-		// Compute ship's surface velocity vector direction	
+		// Compute ship's surface velocity vector direction
 		vel = crossp(src->norv,pos);
 
 		// Compute ship's surface velocity vector magnitude
@@ -378,14 +378,14 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 		gpv = VectorByLonLat(Rot,Off,lon,lat)*size;
 
 		// Compute speed of the base
-		spd = GroundSpeedVector(ref,time,lon,lat);	
-	   
+		spd = GroundSpeedVector(ref,time,lon,lat);
+
 		// Copmute relative position to the base
 		relv = (vel-spd);
-		relp = (pos-gpv);		
-	
+		relp = (pos-gpv);
+
 		dot = dotp(relv,relp);
-	
+
 		trll=trl;
 		if (dot==0) {
 			 no_intercept=false;
@@ -398,10 +398,10 @@ bool SyncMFD::InterpolateClosestPassage(OBJHANDLE ref, Orbit *src, double lon,do
 		}
 		else trl=trl+step;	// base is front of us, cuntinue stepping
 	}
-		
+
 
 	double dif=angle(pos, gpv);
-	
+
 	VECTOR3 zero=crossp(pos,spd);
 
 	if (head) *head = nangle(relp,zero,pos);
@@ -423,7 +423,7 @@ void SyncMFD::Update(HDC hDC)
 	int ld=MFD->LineHeight;
 	int fbp=MFD->FirstButton;
 	char *Mnu = {"BaseSyncMFD v3.0\0"};
-      	    
+
 	int width=MFD->width;
 	int height=MFD->height;
 
@@ -432,7 +432,7 @@ void SyncMFD::Update(HDC hDC)
 
 	int i;
 	VECTOR3 Rot,Off,opos;
-	double obli,trans,per,offset,diff,p,op,t,time,lon,lat;	
+	double obli,trans,per,offset,diff,p,op,t,time,lon,lat;
 	double trl,heading;
 	char   name[32];
 	static const int MAXSOLN = 160;
@@ -441,31 +441,31 @@ void SyncMFD::Update(HDC hDC)
 	double max_diff=1000;
 	bool   draw_text=false;
 
-	Orbit LEO,ShipOrbit,Ecliptic;	
+	Orbit LEO,ShipOrbit,Ecliptic;
 
-	SetTextColor(hDC,white);	
+	SetTextColor(hDC,white);
 	SetTextAlign(hDC,TA_LEFT);
-	TextOut(hDC,5,1,Mnu, (int)strlen(Mnu));	
+	TextOut(hDC,5,1,Mnu, (int)strlen(Mnu));
 
 	if (mode.enc==0) Text(hDC,5,1+ld,"Latitude");
 	if (mode.enc==1) Text(hDC,5,1+ld,"Closest passage");
 	if (mode.enc==2) Text(hDC,5,1+ld,"Apoapsis");
 	if (mode.enc==3) Text(hDC,5,1+ld,"Periapsis");
-	
+
 	if (sync_num<1) sync_num=1;
 	if (sync_num>99) sync_num=99;
 
 
-	OBJHANDLE ref = oapiGetObjectByName(trgt->ref);	
+	OBJHANDLE ref = oapiGetObjectByName(trgt->ref);
 	if (ref==NULL) {
     usingGS2 = false;
     trgt = &bstrgt;
     ref=ship->GetSurfaceRef();
   }
-	
+
 	if (ref==NULL) return;
 
-	
+
 
 	ShipOrbit.Elements(ship->GetHandle(), ref);
 	Ecliptic.Ecliptic();
@@ -492,7 +492,7 @@ void SyncMFD::Update(HDC hDC)
 	  else strcpy(trgt->name,"Surface");
   }
 
-		
+
 	double trle=ShipOrbit.TrlOfNode(&LEO);
 	double EqI=angle(ShipOrbit.norv, LEO.norv);
 	double ang=asin(sin(trgt->lat) / sin(EqI));
@@ -506,13 +506,13 @@ void SyncMFD::Update(HDC hDC)
 	double dist=ShipOrbit.PeriapsisDistance();
 	double apodist = dist=ShipOrbit.AopapsisDistance();
 	if (dist<oapiGetSize(ref)) dist=oapiGetSize(ref);
-	
+
 	double zoom=w/(2.55 * (apodist + apodist + dist) / 3.0);
 	double r=oapiGetSize(ref)*zoom;
-	
+
 	double x=w/2,y=h/2;
 	double intpos=0;
-	
+
 	if (display_texts&2) {
 		SelectObject(hDC,solid_pen_dgrey);
 		DrawEllipse(hDC,x-r,y-r,x+r,y+r,w,h);
@@ -528,7 +528,7 @@ void SyncMFD::Update(HDC hDC)
 			r=ShipOrbit.Radius(bpos)*zoom;
 			DrawLine(hDC,x,y,x+r*cos(bpos),x-r*sin(bpos),w,h,false);
 		}
-		
+
 		if (mode.enc==1) { // Closest Passage
 			r=ShipOrbit.Radius(sync_trl)*zoom;
 			intpos=sync_trl;
@@ -549,7 +549,7 @@ void SyncMFD::Update(HDC hDC)
 
 		ShipOrbit.SetProjection(&ShipOrbit);
 		ShipOrbit.GDIDraw(hDC,green,w,h,zoom,true,true);
-	
+
 		if (mode.deo) {
 			r=ShipOrbit.Radius(deo.trlBurn)*zoom;
 			SelectObject(hDC,solid_pen_white);
@@ -563,9 +563,9 @@ void SyncMFD::Update(HDC hDC)
 		// Usual case... target in range
 
 		draw_text=true;
-		SetTextColor(hDC,green);   
+		SetTextColor(hDC,green);
 		pos=(fbp+(ld*8));
-		
+
 		if (display_texts&1 && !mode.deo) {
 			if (mode.enc==0) {
 				Text(hDC,5,pos," #: Time:");
@@ -590,10 +590,10 @@ void SyncMFD::Update(HDC hDC)
 
 		if (ShipOrbit.ecc<1 && mode.enc==0) {
 			for (i=0;i<MAXSOLN;i++) {
-						 
+
 				if (i&1) time=MAX(atime, btime);
 				else     time=MIN(atime, btime);
-     
+
 				if (time==atime) op=apos;
 				else             op=bpos;
 
@@ -601,18 +601,18 @@ void SyncMFD::Update(HDC hDC)
 				if (i>1) time+=ShipOrbit.Period()*floor(p/2);
 
 				t = time/86400;
-				PlanetAxis(obli,trans,offset,per,t,&Rot,&Off);	
+				PlanetAxis(obli,trans,offset,per,t,&Rot,&Off);
 
 				opos=ShipOrbit.Position(op);
-			 
+
 				LonLat(opos,Rot,Off,&lon,&lat);
-				diff=lon-trgt->lon;		
-             
+				diff=lon-trgt->lon;
+
 				if (fabs(diff)<max_diff) {
 					max_diff=fabs(diff), sync_time=time, sync_trl=op;
 					sync_min=i;
 				}
-					 		
+
 				times[i]=time;
 				diffs[i]=diff;
 				if (time > 0.0 && diff >0.0) {
@@ -622,7 +622,7 @@ void SyncMFD::Update(HDC hDC)
 			}
 		}
 
-        
+
 		max_diff=1e10;
 
 		if (ShipOrbit.ecc<1 && mode.enc==1) {
@@ -630,7 +630,7 @@ void SyncMFD::Update(HDC hDC)
 			double posit=ShipOrbit.trl;
 
 			for (i=0;i<MAXSOLN;i++) {
-				 
+
 				InterpolateClosestPassage(ref,&ShipOrbit,trgt->lon,trgt->lat,posit,&diff,&time,&heading,&trl);
 
 				posit=trl+PI05;
@@ -639,41 +639,41 @@ void SyncMFD::Update(HDC hDC)
 					max_diff=diff, sync_time=time, sync_trl=limit(trl);
 					sync_min=i;
 				}
-			 
+
 				heads[i]=heading;
 				times[i]=time;
 				diffs[i]=diff;
 				if (time > 0.0 && diff >0.0) {
 					sol_found++;
 					if (sol_found==sync_num) break;
-				}			
+				}
 			}
 		}
 
 		if (ShipOrbit.ecc<1 && (mode.enc==2 || mode.enc==3)) {
 			for (i=0;i<MAXSOLN;i++) {
-		 
+
 				if (mode.enc==2) sync_line=limit(ShipOrbit.lpe+PI);
 				else sync_line=limit(ShipOrbit.lpe);
 
 				time=ShipOrbit.TimeTo(sync_line) + ShipOrbit.Period() * (double)i;
 				t = time / 86400.0;
-			 
-				PlanetAxis(obli,trans,offset,per,t,&Rot,&Off);	
+
+				PlanetAxis(obli,trans,offset,per,t,&Rot,&Off);
 
 				VECTOR3 gpv=VectorByLonLat(Rot,Off,trgt->lon,trgt->lat);
 							VECTOR3 pos=ShipOrbit.Position(sync_line);
-			 
-				diff = angle(gpv,pos);		 
+
+				diff = angle(gpv,pos);
 				heading = nangle(pos-gpv,Rot,gpv);
-             
+
 				ShipOrbit.Longitude(gpv,NULL,NULL,&trl);
 
 				if (diff<max_diff && diff>0) {
 					max_diff=diff, sync_time=time, sync_trl=limit(trl);
 					sync_min=i;
 				}
-				
+
 				if (time==0) time=0.1;
 				heads[i]=heading;
 				times[i]=time;
@@ -681,7 +681,7 @@ void SyncMFD::Update(HDC hDC)
 				if (time > 0.0 && diff >0.0) {
 					sol_found++;
 					if (sol_found==sync_num) break;
-				}					
+				}
 			}
 		}
 
@@ -695,17 +695,17 @@ void SyncMFD::Update(HDC hDC)
 					else     time=MIN(atime, btime);
 				}
 				else time=(atime>0 ? atime : btime);
-     
+
 				op = (time==atime? apos : bpos);
 
 				p=(double)i;
 				if (i>1) time+=ShipOrbit.Period()*floor(p/2);
 				t = time/86400;
-				PlanetAxis(obli,trans,offset,per,t,&Rot,&Off);	
+				PlanetAxis(obli,trans,offset,per,t,&Rot,&Off);
 
-				opos=ShipOrbit.Position(op);		 
+				opos=ShipOrbit.Position(op);
 				LonLat(opos,Rot,Off,&lon,&lat);
-				diff=lon-trgt->lon;		
+				diff=lon-trgt->lon;
 
 				if (fabs(diff)<max_diff) {
 					max_diff=fabs(diff), sync_time=time, sync_trl=op;
@@ -713,7 +713,7 @@ void SyncMFD::Update(HDC hDC)
 				}
 
 				times[i]=time;
-				diffs[i]=diff;	
+				diffs[i]=diff;
 
 				if (atime<0 || btime<0) break;
 			}
@@ -744,8 +744,8 @@ void SyncMFD::Update(HDC hDC)
 							Text(hDC,5,pos,name,times[i]);
 							TextA(hDC,width/2,pos,"",diffs[i]*DEG), pos+=ld;
 						}	else { // enc_mode 1,2,3
-							no++;					
-							sprintf(name,"%2d: ",disp_i);			
+							no++;
+							sprintf(name,"%2d: ",disp_i);
 							Text(hDC,5,pos,name,times[i]);
 							Text(hDC,5+width/3,pos,"  ",diffs[i]*rad);
 							TextA(hDC,5+width*2/3,pos,"  ",heads[i]*DEG), pos+=ld;
@@ -761,8 +761,8 @@ void SyncMFD::Update(HDC hDC)
 		// We are in Latitude mode, and the target is outside of our inclination - i.e. no solution
 
 		sol.dataValid = false;
-		SetTextAlign(hDC,TA_CENTER);	
-		SetTextColor(hDC,yellow);   
+		SetTextAlign(hDC,TA_CENTER);
+		SetTextColor(hDC,yellow);
 		pos=(fbp+(ld*8));
 		Text(hDC,width/2,pos,"Target Out of Range"); pos+=ld;
 	}
@@ -783,15 +783,15 @@ void SyncMFD::Update(HDC hDC)
 
 		time_to_int=sync_time;
 		double trl=sync_trl;
-       
+
 		PlanetAxis(obli,trans,offset,per,time_to_int/86400.0,&Rot,&Off);
 		VECTOR3 pos = ShipOrbit.Position(trl);
 		VECTOR3 gpv = VectorByLonLat(Rot,Off,trgt->lon,trgt->lat);
 		VECTOR3 lan = crossp(gpv, pos);
 		VECTOR3 nor = ShipOrbit.norv;
 
-		ShipOrbit.Longitude(lan,NULL,NULL,&sol.trlBurn);		
-          
+		ShipOrbit.Longitude(lan,NULL,NULL,&sol.trlBurn);
+
 		sol.rIn = fabs(asin(dotp(gpv,nor)));
 
 		double a = ShipOrbit.TimeToPoint(sol.trlBurn);
@@ -802,11 +802,11 @@ void SyncMFD::Update(HDC hDC)
 
 		sol.dV = sol.rIn*ShipOrbit.ang/ShipOrbit.Radius(sol.trlBurn);
 		sol.tBurn =BurnTimeBydV(sol.dV,ship);
-		
+
 	}	else {
 		// Calculate burn for plane change correction in EQUATORIAL mode
 
-		sol.trlBurn=ShipOrbit.TrlOfNode(&LEO); 
+		sol.trlBurn=ShipOrbit.TrlOfNode(&LEO);
 		sol.rIn=MAX(trgt->lat-EqI,0);
 
 		double a=ShipOrbit.TimeToPoint(sol.trlBurn);
@@ -850,7 +850,7 @@ void SyncMFD::Update(HDC hDC)
 			// Display the burn solution for plane change
 
 			deo.dataValid = false;
-			pos=fbp;	
+			pos=fbp;
 			SetTextColor(hDC,lgreen);
 
 			if (trgt->lat<0) TextA(hDC,5,pos,"Lat ",fabs(DEG*trgt->lat),"S"), pos+=ld;
@@ -862,16 +862,16 @@ void SyncMFD::Update(HDC hDC)
 			TextA(hDC,5,pos,"EqI ",EqI*DEG), pos+=ld;
 
 
-			PlanetAxis(ref,0,&Rot,&Off);	
+			PlanetAxis(ref,0,&Rot,&Off);
 			VECTOR3 base_pos = VectorByLonLat(Rot,Off,trgt->lon,trgt->lat);
-		
+
 			VECTOR3 ship_pos; ship->GetRelativePos(ref,ship_pos);
 			VECTOR3 ship_vel; ship->GetRelativeVel(ref,ship_vel);
 
 			VECTOR3 gsp=GroundSpeedVector(ref,ship);
 			VECTOR3 zero=crossp(ship_pos,ship_vel);
 			double head = nangle(gsp,zero,ship_pos);
-			
+
 			TextA(hDC,5,pos,"Hed ",head*DEG), pos+=ld;
 			Text(hDC,5,pos, "GSp ",length(gsp)), pos+=ld;
 			Text(hDC,5,pos, "Dst ",angle(ship_pos,base_pos)*oapiGetSize(ref)), pos+=ld;
@@ -879,9 +879,9 @@ void SyncMFD::Update(HDC hDC)
 					Text(hDC,5,pos, "Alt ",length(ShipOrbit.Position(intpos))-oapiGetSize(ref));
       }
 			pos+=ld;
-		
 
-			pos=fbp;	
+
+			pos=fbp;
 			int xx=width/2;
 			SetTextColor(hDC,green);
 			if (mode.dir) Text(hDC,xx,pos,"Direct:"), pos+=ld;
@@ -912,7 +912,7 @@ void SyncMFD::Update(HDC hDC)
 		}	else {
 			// Display the deorbit parameters and burn solution
 
-			pos=fbp;	
+			pos=fbp;
 			SetTextColor(hDC,white);
 			Text(hDC,5,pos,"De-Orbit Program"), pos+=2*ld;
 
@@ -943,14 +943,14 @@ void SyncMFD::Update(HDC hDC)
 
 			if (ShipOrbit.ecc>0.015) {
 				SetTextColor(hDC,lgreen);
-				Text(hDC,5,pos,"De-orbit burn data only accurate"); pos+=ld; 
+				Text(hDC,5,pos,"De-orbit burn data only accurate"); pos+=ld;
 				Text(hDC,5,pos,"if your Ecc is 0.015 or less."); pos+=ld;
 				Text(hDC,5,pos,"(If burn complete, please ignore.)"); pos+=ld;pos+=ld;
 			}
 			if (!mode.dir) {
-				SetTextColor(hDC,lgreen);	
+				SetTextColor(hDC,lgreen);
 				Text(hDC,5,pos,"Use \"Direct\" mode to re-synchronize"); pos+=ld;
-				Text(hDC,5,pos,"the approach after the de-orbit"); 
+				Text(hDC,5,pos,"the approach after the de-orbit");
 			}
 			deo.dataValid = true;
       burn.dV = -deo.dV;
@@ -965,7 +965,19 @@ void SyncMFD::Update(HDC hDC)
 		ModMsgPutByRef("BaseSyncMode", 1, mode);
 		ModMsgPutByRef("BaseSyncSolution", 2, sol);
 		ModMsgPutByRef("BaseSyncDeorbit", 4, deo);
-		ModMsgPutByRef("BaseSyncBurn", 1, burn);
+		//ModMsgPutByRef("BaseSyncBurn", 1, burn);
+		if (burn.dataValid)
+        {
+            ModMsgPut("dv", burn.dV);
+            ModMsgPut("InstantaneousBurnTime", burn.tToInstBurn);
+            ModMsgPut("Orientation", burn.orientation);
+        }
+        else
+        {
+            ModMsgDelete("dv", burn.dV);
+            ModMsgDelete("InstantaneousBurnTime", burn.tToInstBurn);
+            ModMsgDelete("Orientation", burn.orientation);
+        }
 		MMPut_done = true;
 	}
 }
