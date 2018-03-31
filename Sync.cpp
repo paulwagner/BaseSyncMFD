@@ -1,6 +1,6 @@
 //  ==============================================================================================================================================
 //	Copyright (C) 2002 - 2015 Jarmo Nikkanen
-//                2016        Andrew Stokes
+//                2016 - 2018 Andrew Stokes
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -25,7 +25,7 @@
 
 // ==============================================================================================================================================
 //
-SyncMFD::SyncMFD(GeoSyncMFD *m)
+SyncMFD::SyncMFD(GeoSyncMFD *m) : mma("BaseSyncMFD")
 {
 	MFD=m;
 	strcpy(bstrgt.name,"none");
@@ -422,7 +422,7 @@ void SyncMFD::Update(HDC hDC)
 	int pos;
 	int ld=MFD->LineHeight;
 	int fbp=MFD->FirstButton;
-	char *Mnu = {"BaseSyncMFD v3.0\0"};
+	char *Mnu = {"BaseSync v3.2\0"};
 
 	int width=MFD->width;
 	int height=MFD->height;
@@ -872,11 +872,22 @@ void SyncMFD::Update(HDC hDC)
 			VECTOR3 zero=crossp(ship_pos,ship_vel);
 			double head = nangle(gsp,zero,ship_pos);
 
+      double baseHeight = oapiGetSize(ref);
+#if ORBITER_VERSION == 2016
+      ELEVHANDLE eh = oapiElevationManager(ref);
+      if (eh) {
+        baseHeight += oapiSurfaceElevation(ref, trgt->lon, trgt->lat);
+      }
+#endif
+
+
 			TextA(hDC,5,pos,"Hed ",head*DEG), pos+=ld;
 			Text(hDC,5,pos, "GSp ",length(gsp)), pos+=ld;
-			Text(hDC,5,pos, "Dst ",angle(ship_pos,base_pos)*oapiGetSize(ref)), pos+=ld;
+			Text(hDC,5,pos, "Dst ",angle(ship_pos,base_pos)*baseHeight), pos+=ld;
 			if (sol.dataValid) {
-					Text(hDC,5,pos, "Alt ",length(ShipOrbit.Position(intpos))-oapiGetSize(ref));
+        double altitude = length(ShipOrbit.Position(intpos));
+        altitude -= baseHeight;
+				Text(hDC,5,pos, "Alt ",altitude);
       }
 			pos+=ld;
 
@@ -961,22 +972,22 @@ void SyncMFD::Update(HDC hDC)
 	}
 
 	if (!MMPut_done) {
-		ModMsgPutByRef("BaseSyncTarget", 2, bstrgt);
-		ModMsgPutByRef("BaseSyncMode", 1, mode);
-		ModMsgPutByRef("BaseSyncSolution", 2, sol);
-		ModMsgPutByRef("BaseSyncDeorbit", 4, deo);
-		ModMsgPutByRef("BaseSyncBurn", 1, burn); // To be removed after BTC synchronization
+    mma.PutMMStruct("BaseSyncTarget", &bstrgt);
+    mma.PutMMStruct("BaseSyncMode", &mode);
+    mma.PutMMStruct("BaseSyncSolution", &sol);
+    mma.PutMMStruct("BaseSyncDeorbit", &deo);
+    mma.PutMMStruct("BaseSyncBurn", &burn); // To be removed after BTC synchronization
 		if (burn.dataValid)
         {
-            ModMsgPut("dv", burn.dV);
-            ModMsgPut("InstantaneousBurnTime", burn.tToInstBurn);
-            ModMsgPut("Orientation", burn.orientation);
+            mma.Put("dv", burn.dV);
+            mma.Put("InstantaneousBurnTime", burn.tToInstBurn);
+            mma.Put("Orientation", burn.orientation);
         }
         else
         {
-            ModMsgDelete("dv", burn.dV);
-            ModMsgDelete("InstantaneousBurnTime", burn.tToInstBurn);
-            ModMsgDelete("Orientation", burn.orientation);
+          mma.Delete("dv");
+          mma.Delete("InstantaneousBurnTime");
+          mma.Delete("Orientation");
         }
 		MMPut_done = true;
 	}
