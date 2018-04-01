@@ -277,26 +277,26 @@ bool GeoSyncMFD::ConsumeKeyBuffered (DWORD key)
 	switch (key) {	  
 
 		case OAPI_KEY_Z:
-      if (Sync->usingGS2) return true; // ANG, ANT, ALT disables when slaved to GS2
+      if (Sync->usingGS2) return true; // ANG, ANT, ALT disables when linked to GS2
 			ID=7;
 			oapiOpenInputBox ("ReEntry angle (0.0°-90.0°) (typ. 0.5°-4.0°)", DataInput, 0, 20, (void*)this);
 			return true;  
 
 		case OAPI_KEY_X:			
-      if (Sync->usingGS2) return true; // ANG, ANT, ALT disables when slaved to GS2
+      if (Sync->usingGS2) return true; // ANG, ANT, ALT disables when linked to GS2
 			ID=8;
 			oapiOpenInputBox ("ReEntry anticipation (0.0°-360.0°) (typ. 45°-180°)", DataInput, 0, 20, (void*)this);
 			return true;  
 
 		case OAPI_KEY_A:			
-      if (Sync->usingGS2) return true; // ANG, ANT, ALT disables when slaved to GS2
+      if (Sync->usingGS2) return true; // ANG, ANT, ALT disables when linked to GS2
 			ID=9;
 			oapiOpenInputBox ("ReEntry altitude (km) (typ. 80-120)", DataInput, 0, 20, (void*)this);
 			return true;  
 				
 		case OAPI_KEY_T:			
 			ID=4;
-			oapiOpenInputBox ("Enter Target Base, or GS2 to slave to Glideslope 2", DataInput, 0, 30, (void*)this);
+			oapiOpenInputBox ("Enter Target Base, or GS to link to Glideslope", DataInput, 0, 30, (void*)this);
 			return true;  
         
 		case OAPI_KEY_L: 
@@ -471,11 +471,9 @@ bool DataInput (void *id, char *str, void *data)
 			strcpy(Sync->trgt->name,"None");
 		}
 	} else if (ID==4) {                                                         // TARGET NAME
-    if (!_stricmp(str,"GS2")) {
+    if (!_stricmp(str,"GS2") || !_stricmp(str, "GS") || !_stricmp(str, "Glideslope")) {
 
-      MMExt2::Advanced mma("BaseSyncMFD");
-
-      bool ret = mma.GetMMStruct("GS2", "GlideslopeTarget", &Sync->gs2trgt, GLIDESLOPE_EXPORT_TGT_VER, sizeof(GlideslopeExportTgtStruct));
+      bool ret = Sync->mma.GetMMStruct("GS2", "GlideslopeTarget", &Sync->gs2trgt, GLIDESLOPE_EXPORT_TGT_VER, sizeof(GlideslopeExportTgtStruct));
       if (ret) {
         Sync->usingGS2 = true;
         Sync->trgt = (BaseSyncExportTgtStruct *) Sync->gs2trgt;
@@ -496,8 +494,6 @@ bool DataInput (void *id, char *str, void *data)
 			if (bas) {
         strncpy(Sync->trgt->name,str,31);
 				oapiGetBaseEquPos(bas,&Sync->trgt->lon, &Sync->trgt->lat);
-			} else {
-				strcpy(Sync->trgt->name,"None");
 			}
 		}
 

@@ -82,8 +82,8 @@ public:
 	int     sync_min, sync_sel, display_texts, sync_num, sync_dispmin;
 	bool    vector_display;
 
-private:
   MMExt2::Advanced mma;
+private:
 
 };
 

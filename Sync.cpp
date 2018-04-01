@@ -825,7 +825,7 @@ void SyncMFD::Update(HDC hDC)
 	pos=1;
 	SetTextColor(hDC,grey);
   if (usingGS2) {
-	  Text(hDC,width*1/2,pos,"Linked ","to GS2"); pos+=ld;
+	  Text(hDC,width*1/2,pos,"Linked ","to GS"); pos+=ld;
 
     // Check if GS2 changed target
     if (bstrgt.lat != gs2trgt->lat || bstrgt.lon != gs2trgt->lon) {
@@ -927,10 +927,10 @@ void SyncMFD::Update(HDC hDC)
 
 			SetTextColor(hDC,lgreen);
       if (usingGS2) {
-			  Text(hDC,5,pos, "Ang, Ant, Alt from GS2"), pos+=ld;
-        TextA(hDC,5,pos,"GS2 Ang ",trgt->ang*DEG), pos+=ld;
-			  TextA(hDC,5,pos,"GS2 Ant ",trgt->ant*DEG), pos+=ld;
-			  Text(hDC,5,pos, "GS2 Alt ",trgt->alt,"km"), pos+=2*ld;
+			  Text(hDC,5,pos, "Ang, Ant, Alt from GS"), pos+=ld;
+        TextA(hDC,5,pos,"GS Ang ",trgt->ang*DEG), pos+=ld;
+			  TextA(hDC,5,pos,"GS Ant ",trgt->ant*DEG), pos+=ld;
+			  Text(hDC,5,pos, "GS Alt ",trgt->alt,"km"), pos+=2*ld;
       } else {
         TextA(hDC,5,pos,"Ang ",bstrgt.ang*DEG), pos+=ld;
 			  TextA(hDC,5,pos,"Ant ",bstrgt.ant*DEG), pos+=ld;
