@@ -943,7 +943,10 @@ void SyncMFD::Update(HDC hDC)
 			deo.trlBurn = limit(sync_trl - trgt->ant - pre);
 			deo.tInstBurn = ShipOrbit.TimeToPoint(deo.trlBurn);
 			deo.tBurn = BurnTimeBydV(deo.dV,ship);
-			deo.tToBurn = deo.tInstBurn - 0.5 * deo.tBurn;
+			// With OC_SUPPORT
+			deo.tToBurn = deo.tInstBurn;
+			if(isnormal(deo.tBurn))
+				deo.tToBurn -= 0.5 * deo.tBurn;
 
 			Text(hDC,5,pos, "TBn ",deo.tToBurn,"s"), pos+=ld;
 			TextA(hDC,5,pos,"TrL ",deo.trlBurn*DEG), pos+=ld;
